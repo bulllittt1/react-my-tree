@@ -1,11 +1,8 @@
 ## How to run this app on a local server
 
-* ####  Download this repository to your computer:
-    [Link for "my-tree-master.zip" file](https://github.com/bulllittt1/my-tree/archive/master.zip)
+* #### Using CLI (i.e. command line), download and access this repository on your computer:
+    `git clone https://github.com/bulllittt1/react-my-tree && cd react-my-tree`
   
-* #### Unzip and go into the directory via CLI (i.e. command line):
-    `cd ~/my-tree-master`
-    
 * #### In the project directory:
     * If you have node packages installed globally on your computer, just create a link to them: <br>
       
