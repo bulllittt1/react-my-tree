@@ -37,14 +37,11 @@
 }
 
 .Sidebar > input {
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
+  margin: 0.1rem 0;
 }
 
 .Sidebar > h3 {
   border-bottom: medium solid #61DAFB;
-  padding-bottom: 0.7rem;
-
 }
 
 #btn-createNode {
@@ -52,6 +49,9 @@
   background-color: #61DAFB;
   color: black;
   font-size: 1rem;
+  position: absolute;
+  bottom: 0;
+  width: inherit;
 }
 
 /* Node element settings */

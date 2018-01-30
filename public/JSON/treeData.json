@@ -1,0 +1,33 @@
+{
+	"id": 0,
+	"title": "ROOT",
+	"childNodes": [{
+		"id": 1,
+		"title": "NODE 1",
+		"childNodes": [{
+			"id": 3,
+			"title": "NODE 3",
+			"childNodes": []
+		}, {
+			"id": 4,
+			"title": "NODE 4",
+			"childNodes": []
+		}]
+	}, {
+		"id": 2,
+		"title": "NODE 2",
+		"childNodes": [{
+			"id": 5,
+			"title": "NODE 5",
+			"childNodes": [{
+				"id": 7,
+				"title": "NODE 7",
+				"childNodes": []
+			}]
+		}]
+	}, {
+		"id": 6,
+		"title": "NODE 6",
+		"childNodes": []
+	}]
+}
