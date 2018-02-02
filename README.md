@@ -14,7 +14,7 @@
 
  * #### Run the web server(also this command opens a new Terminal window:
     `open -a /Applications/Utilities/Terminal.app . && go run server.go`
-    * If the previous command doesnt work, just run the command below and go to the next step:
+    * If the previous command doesnt work, just run the command below and go to the next step: <br>
         `go run server.go`
  * #### Open another Terminal window and run the react-app in the development mode:
     `npm start`
