@@ -203,7 +203,7 @@ class TreeContainer extends Component {
   }
 
   componentDidMount() {
-    const url = './JSON/treeData.json';
+    const url = "http://localhost:3001/api/treeData";
     fetch(url)
         .then(res => res.json())
         .then(
