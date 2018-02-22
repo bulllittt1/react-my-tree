@@ -127,10 +127,23 @@ func dbGetTree(db *sql.DB) (*Node, error) {
 	return &Tree, nil
 }
 
+// duplicateCounter indicates the number of a node's copy
+// by checking node's "Title",
+// added invisibly to "Title" if node has duplicates in database.
+var duplicateCounter int
+
 // dbAddNewNode adds a new node to the database,
 // requires ID of the node(i.e. parent), which will be
 // joined with a child wiht provided "Title".
 func dbAddNewNode(db *sql.DB, parentID int, Title string) error {
+	// Check for a duplicate "Title" in database and handle if find one.
+	var duplTitle string
+	_ = db.QueryRow("SELECT Title FROM NodesTable WHERE Title = ?", Title).Scan(&duplTitle)
+	if duplTitle == Title {
+		Title += string(duplicateCounter)
+		duplicateCounter += 1
+	}
+
 	tx, err := db.Begin()
 	if err != nil {
 		return err
