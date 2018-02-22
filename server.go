@@ -258,6 +258,7 @@ func addNodeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer r.Body.Close()
+	// Handle empty user input for "Title".
 	if data.Title == "" {
 		data.Title = "No title"
 	}
