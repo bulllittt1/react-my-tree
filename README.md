@@ -20,7 +20,7 @@
  * #### Run the backend:
     `go run server.go`
     * Console will ask $username and $password to access your MySQL server
- * #### Open another console window and run the frontend; react-app in the development mode:
+ * #### Open another console window in the same directory again (~/react-my-tree) and run the frontend; react-app in the development mode:
     `npm start`
 * #### Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
