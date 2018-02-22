@@ -15,7 +15,7 @@ class Sidebar extends Component {
       `Selected file - ${this.fileInput.files[0].name}`
       :
       `No file uploaded`;
-    alert(message);
+    // alert(message);
     this.props.onSubmit();
   }
 
@@ -81,24 +81,24 @@ class Node extends Component {
         )
   }
 
-  handleAddClick(id) {
-    this.props.onAddClick(id);
+  handleAddClick(ID) {
+    this.props.onAddClick(ID);
   }
 
-  handleDeleteClick(parentId, id) {
-    this.props.onDeleteClick(parentId, id);
+  handleDeleteClick(parentID, ID) {
+    this.props.onDeleteClick(parentID, ID);
   }
 
   render() {
-    const id = this.props.id;
-    const parentId = this.props.parentId;
+    const ID = this.props.ID;
+    const parentID = this.props.parentID;
 
     // Makes "-" button disabled for the ROOT NODE
-    const deleteButton = !(this.props.id === 0) ?
+    const deleteButton = !(this.props.ID === 1) ?
     <button
       className="btn btn-deleteNode"
       disabled={this.props.buttonDisabled}
-      onClick={() => this.handleDeleteClick(parentId, id)} >
+      onClick={() => this.handleDeleteClick(parentID, ID)} >
        {"-"}
     </button>
     :
@@ -111,15 +111,15 @@ class Node extends Component {
 
     return (
       <div className="Node-container"
-        id={id}
-        parent-id={this.props.parentId} >
+        id={ID}
+        parent-id={this.props.parentID} >
         <div className="Node">
           {deleteButton}
           <p>{this.props.title}</p>
           <button
             className="btn btn-addChild"
             disabled={this.props.buttonDisabled}
-            onClick={() => this.handleAddClick(id)} >
+            onClick={() => this.handleAddClick(ID)} >
             {"+"}
           </button>
         </div>
@@ -138,23 +138,23 @@ class Tree extends Component {
     this.handleDeleteClick = this.handleDeleteClick.bind(this);
   }
 
-  handleAddClick(id) {
-    this.props.onAddClick(id);
+  handleAddClick(ID) {
+    this.props.onAddClick(ID);
   }
 
-  handleDeleteClick(parentId, id) {
-    this.props.onDeleteClick(parentId, id);
+  handleDeleteClick(parentID, ID) {
+    this.props.onDeleteClick(parentID, ID);
   }
 
   render() {
     // If a Node element has children -> recursion pattern
-    let childNodes;
-    if (this.props.node.childNodes != null) {
-      childNodes = this.props.node.childNodes.map(
+    let ChildNodes;
+    if (this.props.node.ChildNodes != null) {
+      ChildNodes = this.props.node.ChildNodes.map(
         (node, index)=>{
-          return (<li key={node.id} className="item">
+          return (<li key={node.ID} className="item">
                     <Tree node={node}
-                          parentId={this.props.node.id}
+                          parentID={this.props.node.ID}
                           onAddClick={this.props.onAddClick}
                           onDeleteClick = {this.props.onDeleteClick}
                           buttonDisabled = {this.props.buttonDisabled}
@@ -168,15 +168,15 @@ class Tree extends Component {
     return(
       <div className="Tree" >
         <Node
-          id={this.props.node.id}
-          title={this.props.node.title}
-          parentId = {this.props.parentId}
+          ID={this.props.node.ID}
+          title={this.props.node.Title}
+          parentID = {this.props.parentID}
           onAddClick = {this.handleAddClick}
           onDeleteClick = {this.handleDeleteClick}
           buttonDisabled = {this.props.buttonDisabled}
          />
          <ul className="container">
-           {childNodes}
+           {ChildNodes}
          </ul>
       </div>
     );
@@ -193,7 +193,7 @@ class TreeContainer extends Component {
       data: {}, //JSON data
       displaySidebar: false,
       buttonDisabled: false,
-      currentNodeId: null,
+      currentNodeID: null,
       currentNodeTitle: ''
     }
     this.handleAddClick = this.handleAddClick.bind(this);
@@ -203,7 +203,7 @@ class TreeContainer extends Component {
   }
 
   componentDidMount() {
-    const url = "http://localhost:3001/api/treeData";
+    const url = 'http://localhost:8080/getTree';
     fetch(url)
         .then(res => res.json())
         .then(
@@ -219,17 +219,39 @@ class TreeContainer extends Component {
         )
   }
 
-  handleAddClick(id) {
-    console.log(`Call to create a child to the node with id=${id}`);
+  handleAddClick(ID) {
+    console.log(`Call to create a child to the node with ID=${ID}`);
     this.setState(
       {displaySidebar: true,
        buttonDisabled: true,
-       currentNodeId: id
+       currentNodeID: ID
      });
   }
 
-  handleDeleteClick(parentId, id) {
-    console.log(`Call to remove node with id=${id} from parentId=${parentId}`)
+  handleDeleteClick(parentID, ID) {
+    console.log(`Call to remove node with ID=${ID} from parentID=${parentID}`)
+    const url = 'http://localhost:8080/deleteNode';
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            ID: ID,
+        })
+    })
+        .then(res => res.json())
+        .then(
+          (result) => {
+            this.setState({
+              data: result
+            });
+          }
+          ,
+          (error) => {
+            console.log(`Error: ${error.message}`);
+          }
+        )
   }
 
   handleTitleChange(title) {
@@ -239,9 +261,34 @@ class TreeContainer extends Component {
   handleCreateClick() {
     this.setState({displaySidebar: false, buttonDisabled:false});
     const title = this.state.currentNodeTitle;
-    const id = this.state.currentNodeId;
-    const message = `Child with title: "${title}" appended to the node with id=${id}`;
+    const ID = this.state.currentNodeID;
+    const message = `Child with title: "${title}" appended to the node with ID=${ID}`;
     console.log(message);
+
+    const url = 'http://localhost:8080/addNode';
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            ParentID: ID,
+            Title: title
+        })
+    })
+        .then(res => res.json())
+        .then(
+          (result) => {
+            this.setState({
+              data: result
+            });
+          }
+          ,
+          (error) => {
+            console.log(`Error: ${error.message}`);
+          }
+        )
+
 
   }
 
