@@ -83,7 +83,6 @@
   border: medium solid #282C34;
   border-top: none;
   height: 6rem;
-  width: 80%;
 }
 
 .btn {
@@ -91,15 +90,6 @@
   color: white;
   font-size: 1.5rem;
 }
-
-/* .btn-deleteNode {
-  color: red;
-}
-
-.btn-addChild {
-  color: green;
-} */
-
 
 /* Tree settings */
 
