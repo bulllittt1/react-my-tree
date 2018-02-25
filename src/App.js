@@ -2,59 +2,65 @@ import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
 
-// Sidebar element gets user input("title" and "avatar") for a new Node.
-// Appears when "+" button is clicked on a Node.
+// Sidebar receives user input("title" and "avatar") for a new Node,
+// appears when "+" button is clicked on a Node.
 class Sidebar extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      currentFile: null,
+      currentTitle: ''
+    };
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
   handleSubmit() {
-    const message = (this.fileInput.files[0]) ?
-      `Selected file - ${this.fileInput.files[0].name}`
-      :
-      `No file uploaded`;
-    // alert(message);
-    this.props.onSubmit();
+      const file = this.state.currentFile;
+      const title = this.state.currentTitle;
+      this.props.onSubmit(file, title);
+  }
+
+  handleInputChange(input) {
+      this.setState({
+        currentFile: input.target.files[0]
+      });
   }
 
   handleTitleChange(e) {
-    this.props.onTitleChange(e.target.value);
+      this.setState({
+        currentTitle: e.target.value
+      });
   }
 
   render() {
     return (
-      <form className="Sidebar" onSubmit={this.handleSubmit}>
+      <div className="Sidebar">
         <h3>Create Node </h3>
         <label>
-          Upload file:
+          Upload image:
         </label>
         <input
           type="file"
-          ref={input => {this.fileInput = input;}}
+          accept="image/*"
+          onChange = {(input) => this.handleInputChange(input)}
         />
-
         <input
           type="text"
-          placeholder='Type a title'
+          placeholder='Enter a title'
           autoFocus
           onChange = {(e) => this.handleTitleChange(e)}
         />
-        <button
-          id='btn-createNode'
-          onClick={this.handleSubmit}
-           >
-          Create
+        <button id='btn-createNode' onClick={this.handleSubmit}>
+            Create new
         </button>
-      </form>
+      </div>
     );
   }
 }
 
-// Node element contains an avatar
-// "-" button -> removes current NODE
-// "+" button -> calls the Sidebar to append a new Node as a child
+// Node requires "title" and "avatar",
+// "-" button -> removes current NODE,
+// "+" button -> calls Sidebar to create a new Node as a child
 class Node extends Component {
   constructor(props) {
     super(props);
@@ -64,8 +70,11 @@ class Node extends Component {
   }
 
   componentDidMount() {
-    const url = "./images/react.png";
-    fetch(url)
+    // Handle first rendering without ID from JSON data.
+    const ID = !(this.props.ID)? 1 : this.props.ID;
+    const avatarURL = "http://localhost:8080/getAvatar/ID=" + ID;
+
+    fetch(avatarURL)
         .then(res => res.blob())
         .then(
           (result) => {
@@ -73,8 +82,7 @@ class Node extends Component {
             this.setState({
               imageSrc: src
             });
-          }
-          ,
+          },
           (error) => {
             console.log(`Error: ${error.message}`);
           }
@@ -85,20 +93,19 @@ class Node extends Component {
     this.props.onAddClick(ID);
   }
 
-  handleDeleteClick(parentID, ID) {
-    this.props.onDeleteClick(parentID, ID);
+  handleDeleteClick(ID) {
+    this.props.onDeleteClick(ID);
   }
 
   render() {
     const ID = this.props.ID;
-    const parentID = this.props.parentID;
 
-    // Makes "-" button disabled for the ROOT NODE
+    // Return "-" button disabled for the ROOT NODE.
     const deleteButton = !(this.props.ID === 1) ?
     <button
       className="btn btn-deleteNode"
       disabled={this.props.buttonDisabled}
-      onClick={() => this.handleDeleteClick(parentID, ID)} >
+      onClick={() => this.handleDeleteClick(ID)} >
        {"-"}
     </button>
     :
@@ -123,31 +130,34 @@ class Node extends Component {
             {"+"}
           </button>
         </div>
-        <img src={this.state.imageSrc} className="Node-Image" alt="Uploaded node avatar" />
+        <img src={this.state.imageSrc} className="Node-Image"
+            alt="Server error: no avatar uploaded" />
       </div>
     );
   }
 }
 
-// Creates a tree depending on the JSON input data (treeData.json)
-// If a Node element has children, Tree element works via recursion and creates a sub-tree
+
+// Tree - is tree structure,
+// contains Node and its children, if any,
+// children go as the same type (i.e. Tree),
+// creating sub-Trees.
 class Tree extends Component {
   constructor(props) {
     super(props);
-    this.handleAddClick = this.handleAddClick.bind(this);
-    this.handleDeleteClick = this.handleDeleteClick.bind(this);
+    this.transferAddClick = this.transferAddClick.bind(this);
+    this.transferDeleteClick = this.transferDeleteClick.bind(this);
   }
-
-  handleAddClick(ID) {
+  // Transfer function calls from Node to TreeContainer.
+  transferAddClick(ID) {
     this.props.onAddClick(ID);
   }
-
-  handleDeleteClick(parentID, ID) {
-    this.props.onDeleteClick(parentID, ID);
+  transferDeleteClick(ID) {
+    this.props.onDeleteClick(ID);
   }
 
   render() {
-    // If a Node element has children -> recursion pattern
+    // If Node has children -> recursion pattern
     let ChildNodes;
     if (this.props.node.ChildNodes != null) {
       ChildNodes = this.props.node.ChildNodes.map(
@@ -171,8 +181,8 @@ class Tree extends Component {
           ID={this.props.node.ID}
           title={this.props.node.Title}
           parentID = {this.props.parentID}
-          onAddClick = {this.handleAddClick}
-          onDeleteClick = {this.handleDeleteClick}
+          onAddClick = {this.transferAddClick}
+          onDeleteClick = {this.transferDeleteClick}
           buttonDisabled = {this.props.buttonDisabled}
          />
          <ul className="container">
@@ -183,9 +193,10 @@ class Tree extends Component {
   }
 }
 
-// TreeContainer element contains created Tree element and the Sidebar
-// Fetches data from JSON -> treeData.json
-// Gets and processes user actions from Node and Sidebar elements
+// TreeContainer holds Tree and its sub-Trees,
+// displays Sidebar, if Node's "+" button clicked,
+// fetches JSON data from Backend,
+// handles user actions from Nodes and Sidebar.
 class TreeContainer extends Component {
   constructor(props) {
     super(props);
@@ -193,13 +204,11 @@ class TreeContainer extends Component {
       data: {}, //JSON data
       displaySidebar: false,
       buttonDisabled: false,
-      currentNodeID: null,
-      currentNodeTitle: ''
+      currentNodeID: null
     }
     this.handleAddClick = this.handleAddClick.bind(this);
     this.handleDeleteClick = this.handleDeleteClick.bind(this);
     this.handleCreateClick = this.handleCreateClick.bind(this);
-    this.handleTitleChange = this.handleTitleChange.bind(this);
   }
 
   componentDidMount() {
@@ -211,8 +220,7 @@ class TreeContainer extends Component {
             this.setState({
               data: result
             });
-          }
-          ,
+          },
           (error) => {
             console.log(`Error: ${error.message}`);
           }
@@ -220,7 +228,7 @@ class TreeContainer extends Component {
   }
 
   handleAddClick(ID) {
-    console.log(`Call to create a child to the node with ID=${ID}`);
+    console.log(`Call to create a child with the parent node ID=${ID}`);
     this.setState(
       {displaySidebar: true,
        buttonDisabled: true,
@@ -228,53 +236,31 @@ class TreeContainer extends Component {
      });
   }
 
-  handleDeleteClick(parentID, ID) {
-    console.log(`Call to remove node with ID=${ID} from parentID=${parentID}`)
-    const url = 'http://localhost:8080/deleteNode';
-    fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            ID: ID,
-        })
-    })
-        .then(res => res.json())
-        .then(
-          (result) => {
-            this.setState({
-              data: result
-            });
-          }
-          ,
-          (error) => {
-            console.log(`Error: ${error.message}`);
-          }
-        )
-  }
-
-  handleTitleChange(title) {
-    this.setState({currentNodeTitle: title});
-  }
-
-  handleCreateClick() {
+  handleCreateClick(file, title) {
     this.setState({displaySidebar: false, buttonDisabled:false});
-    const title = this.state.currentNodeTitle;
     const ID = this.state.currentNodeID;
-    const message = `Child with title: "${title}" appended to the node with ID=${ID}`;
-    console.log(message);
+    const message = `Child appended to the node with ID=${ID}`;
+
+    // Send data to Backend within formdata.
+    let data = new FormData();
+    // Check if avatar was uploaded and inform Backend about it.
+    if (file != null) {
+        data.append('filestatus', 'true');
+    } else {
+        data.append('filestatus', 'false');
+    }
+
+    data.append('uploadfile', file);
+    const jsonData = JSON.stringify({
+        ParentID: ID,
+        Title: title
+    });
+    data.append('jsonData', jsonData);
 
     const url = 'http://localhost:8080/addNode';
     fetch(url, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            ParentID: ID,
-            Title: title
-        })
+        body: data
     })
         .then(res => res.json())
         .then(
@@ -282,24 +268,39 @@ class TreeContainer extends Component {
             this.setState({
               data: result
             });
+            console.log(message);
+          },
+          (error) => {
+            console.log(`Error: ${error.message}`);
+          }
+        )
+  }
+
+  handleDeleteClick(ID) {
+    const url = "http://localhost:8080/deleteNode/ID=" + ID;
+    fetch(url)
+        .then(res => res.json())
+        .then(
+          (result) => {
+            this.setState({
+              data: result
+            });
+            console.log(`Node with ID=${ID} - removed`)
           }
           ,
           (error) => {
             console.log(`Error: ${error.message}`);
           }
         )
-
-
   }
 
   render() {
+    // Display Sidebar depending on displaySidebar status.
     return(
       <div className="TreeContainer" >
-
         {this.state.displaySidebar &&
         <Sidebar
           onSubmit = {this.handleCreateClick}
-          onTitleChange = {this.handleTitleChange}
         /> }
 
         <Tree
@@ -313,7 +314,6 @@ class TreeContainer extends Component {
   }
 }
 
-// Page header
 function Header(props) {
     return(
       <div className="App-header">
@@ -323,7 +323,6 @@ function Header(props) {
     );
 }
 
-// App element renders the whole app
 class App extends Component {
   render() {
     return (
