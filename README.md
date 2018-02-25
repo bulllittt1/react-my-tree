@@ -13,8 +13,6 @@
       `npm link`
     * If not, install node packages into the project directory: <br>
       `npm install`
- * #### Set up GOPATH:
-      `export PATH=$PATH:$(go env GOPATH)/bin`
  * #### Download needed Go package:
       `go get github.com/rs/cors`
  * #### Run the backend:
