@@ -7,7 +7,7 @@
 
 ### Follow these steps to run the app:
 * #### Using CLI (i.e. command line), download and access the repository on your computer:
-    `git clone https://github.com/bulllittt1/react-my-tree.git -b server-api && cd react-my-tree`
+    `git clone https://github.com/bulllittt1/react-my-tree.git && cd react-my-tree`
 * #### In the project directory:
     * If you have node packages installed globally on your computer, just link to them: <br>
       `npm link`
